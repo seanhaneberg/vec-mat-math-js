@@ -9,7 +9,7 @@
     var lastInvoke = null;
     var canvas = null;
     var bounceReduce = 0.8;
-    var debugData = false;
+    var debugData = true;
     
     var globalSettings = {
         width: 640,
@@ -100,7 +100,30 @@
     
     var drawDebugInfo = function () {
         var velocityExaggeration = 400;
-        drawRay(ball.position, VecMath.scalarMultVector2(velocityExaggeration, ball.velocity), "blue");
+        VecDraw.drawRay(ball.position, VecMath.scalarMultVector2(velocityExaggeration, ball.velocity), "blue", 3);
+        drawBallToPlayAreaBounds();
+    };
+    
+    var drawBallToPlayAreaBounds = function () {
+        for (var i = 0; i < playArea.length; i++) {
+            var lineFrom = playArea[i];
+            var lineTo = null;
+            
+            if (i + 1 >= playArea.length) {
+                lineTo = playArea[0];
+            } else {
+                lineTo = playArea[i + 1];
+            }
+
+            drawPointToLine(lineFrom, lineTo, ball.position);
+        }
+        
+    
+    };
+    
+    var drawPointToLine = function (lineStart, lineEnd, point) {
+        var pointToNorm = VecMath.pointToLineVector(lineStart, lineEnd, point);
+        VecDraw.drawRay(point, pointToNorm, "blue", 3);
     };
     
     var draw = function () {
@@ -122,4 +145,3 @@
     main();
 
 })();
-
