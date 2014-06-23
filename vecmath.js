@@ -60,5 +60,4 @@ var VecMath = VecMath ? VecMath : {};
         return pointToNorm;
     };
     
-    
 })();

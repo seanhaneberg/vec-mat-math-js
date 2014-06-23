@@ -50,17 +50,54 @@
         return delta;
     };
 
+    // Return a collection of lines.
+    // TODO: Move to a vert index buffer model.
+    var linesFromVerts = function (verts) {
+        var lines = [];
+        
+        for (var i = 0; i < verts.length; i++) {
+            var lineFrom = verts[i];
+            var lineTo = null;
+            if (i + 1 >= verts.length) {
+                lineTo = verts[0];
+            } else {
+                lineTo = verts[i + 1];
+            }
+            
+            lines[lines.length] = {start: lineFrom, end: lineTo};
+        }
+
+        return lines;
+    };
+    
     var updateBall = function () {
         var delta = deltaTime();
 
+        var playAreaLines = linesFromVerts(playArea);
+
+        // Check all boundaries
+        for (var i = 0; i < playAreaLines.length; i++) {
+            var pointToLine = VecMath.pointToLineVector(playAreaLines[i].start, playAreaLines[i].end, ball.position);
+            var distance = VecMath.magnitude(pointToLine);
+            
+            var facingLine = VecMath.dot(pointToLine, ball.velocity);
+            
+            // If the ball touches a wall while heading towards it, bounce.
+            if (distance <= ball.radius && facingLine > 0) {
+                // TODO better physics. Bounce for now.
+                ball.velocity.x = -ball.velocity.x * bounceReduce;
+                ball.velocity.y = -ball.velocity.y * bounceReduce;
+            }
+        }
+        
         if ((ball.position.x + 10 >= canvas.width && ball.velocity.x > 0)|| (ball.position.x <= 0 && ball.velocity.x < 0))
         {
-            ball.velocity.x = -ball.velocity.x * bounceReduce;
+            
         }
 
         if ((ball.position.y + 10 >= canvas.height && ball.velocity.y > 0) || (ball.position.y <= 0 && ball.velocity.y < 0))
         {
-            ball.velocity.y = -ball.velocity.y * bounceReduce;
+            
         }
 
         var movementVector = VecMath.scalarMultVector2(delta, ball.velocity);
@@ -82,48 +119,28 @@
     };
     
     var drawPlayArea = function () {
-
-        for (var i = 0; i < playArea.length; i++) {
-            var lineFrom = playArea[i];
-            var lineTo = null;
-            
-            // Look ahead. If we're at the end, close the loop.
-            if (i + 1 >= playArea.length) {
-                lineTo = playArea[0];
-            } else {
-                lineTo = playArea[i + 1];
-            }
-
-            VecDraw.drawLine(lineFrom, lineTo);
+        var lines = linesFromVerts(playArea);
+        for (var i = 0; i < lines .length; i++) {
+            VecDraw.drawLine(lines[i].start, lines[i].end);
         }
     };
     
     var drawDebugInfo = function () {
         var velocityExaggeration = 400;
         VecDraw.drawRay(ball.position, VecMath.scalarMultVector2(velocityExaggeration, ball.velocity), "blue", 3);
-        drawBallToPlayAreaBounds();
+        drawBallToPlayArea();
     };
     
-    var drawBallToPlayAreaBounds = function () {
+    var drawBallToPlayArea = function () {
+        var lines = linesFromVerts(playArea);
         for (var i = 0; i < playArea.length; i++) {
-            var lineFrom = playArea[i];
-            var lineTo = null;
-            
-            if (i + 1 >= playArea.length) {
-                lineTo = playArea[0];
-            } else {
-                lineTo = playArea[i + 1];
-            }
-
-            drawPointToLine(lineFrom, lineTo, ball.position);
+            drawPointToLine(lines[i].start, lines[i].end, ball.position);
         }
-        
-    
     };
     
     var drawPointToLine = function (lineStart, lineEnd, point) {
-        var pointToNorm = VecMath.pointToLineVector(lineStart, lineEnd, point);
-        VecDraw.drawRay(point, pointToNorm, "blue", 3);
+        var pointToLine = VecMath.pointToLineVector(lineStart, lineEnd, point);
+        VecDraw.drawRay(point, pointToLine, "blue", 3);
     };
     
     var draw = function () {
