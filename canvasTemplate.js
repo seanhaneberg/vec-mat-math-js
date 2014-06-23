@@ -82,22 +82,25 @@
             
             var facingLine = VecMath.dot(pointToLine, ball.velocity);
             
-            // If the ball touches a wall while heading towards it, bounce.
             if (distance <= ball.radius && facingLine > 0) {
-                // TODO better physics. Bounce for now.
-                ball.velocity.x = -ball.velocity.x * bounceReduce;
-                ball.velocity.y = -ball.velocity.y * bounceReduce;
+                // R = 2 * (V dot N) * N - V
+                var pointToLineUnit = VecMath.scalarDivideVector2(distance, pointToLine);
+                var vDotN = 2 * VecMath.dot(ball.velocity, pointToLineUnit);
+                var normalProj = VecMath.scalarMultVector2(vDotN, pointToLineUnit);
+                var reflection = VecMath.subVector2(normalProj, ball.velocity);
+                ball.velocity = VecMath.scalarMultVector2(-1 * bounceReduce, reflection);
             }
         }
         
+        // TODO: Remove
         if ((ball.position.x + 10 >= canvas.width && ball.velocity.x > 0)|| (ball.position.x <= 0 && ball.velocity.x < 0))
         {
-            
+            ball.velocity.x = -ball.velocity.x * bounceReduce;
         }
 
         if ((ball.position.y + 10 >= canvas.height && ball.velocity.y > 0) || (ball.position.y <= 0 && ball.velocity.y < 0))
         {
-            
+            ball.velocity.y = -ball.velocity.y * bounceReduce;
         }
 
         var movementVector = VecMath.scalarMultVector2(delta, ball.velocity);
