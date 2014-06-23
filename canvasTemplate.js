@@ -8,7 +8,7 @@
     var context = null;
     var lastInvoke = null;
     var canvas = null;
-    var bounceReduce = 0.8;
+    var bounceReduce = 1.0;
     var debugData = true;
     
     var globalSettings = {
@@ -27,6 +27,7 @@
     var playArea = [
         VecMath.vector2(40, 50),
         VecMath.vector2(500, 40),
+        VecMath.vector2(600, 200),
         VecMath.vector2(485, 300),
         VecMath.vector2(60, 320)
     ];
@@ -83,11 +84,10 @@
             var facingLine = VecMath.dot(pointToLine, ball.velocity);
             
             if (distance <= ball.radius && facingLine > 0) {
-                // R = 2 * (V dot N) * N - V
                 var pointToLineUnit = VecMath.scalarDivideVector2(distance, pointToLine);
-                var vDotN = 2 * VecMath.dot(ball.velocity, pointToLineUnit);
-                var normalProj = VecMath.scalarMultVector2(vDotN, pointToLineUnit);
-                var reflection = VecMath.subVector2(normalProj, ball.velocity);
+
+                // Reflect about the unit normal from the colliding line.
+                var reflection = VecMath.reflect(ball.velocity, pointToLineUnit);
                 ball.velocity = VecMath.scalarMultVector2(-1 * bounceReduce, reflection);
             }
         }

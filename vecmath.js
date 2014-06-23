@@ -48,7 +48,6 @@ var VecMath = VecMath ? VecMath : {};
         //      a is lineStart
         //      p is point
         //      n is the unit vector direction of the line segment
-        
         var lineSegmentVector = VecMath.subVector2(lineEnd, lineStart);
         var norm = VecMath.scalarDivideVector2(VecMath.magnitude(lineSegmentVector), lineSegmentVector);
         
@@ -58,6 +57,12 @@ var VecMath = VecMath ? VecMath : {};
         var projectOnNormVector = VecMath.scalarMultVector2(projectOnNormMagnitude, norm);
         var pointToNorm = VecMath.subVector2(originToPoint, projectOnNormVector);
         return pointToNorm;
+    };
+    
+    VecMath.reflect = function (vector, mirror) {
+        // R = 2 * (V dot N) * N - V
+        var proj = VecMath.scalarMultVector2(2 * VecMath.dot(vector, mirror), mirror);
+        return VecMath.subVector2(proj, vector);
     };
     
 })();
