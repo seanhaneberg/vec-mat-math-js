@@ -27,7 +27,7 @@
     var playArea = [
         VecMath.vector2(40, 50),
         VecMath.vector2(500, 40),
-        VecMath.vector2(600, 200),
+        VecMath.vector2(300, 200),
         VecMath.vector2(485, 300),
         VecMath.vector2(60, 320)
     ];

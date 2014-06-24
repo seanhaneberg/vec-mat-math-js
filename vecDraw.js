@@ -33,4 +33,12 @@ var VecDraw = VecDraw ? VecDraw : {};
         context.stroke();
     };
 
+    VecDraw.drawPoint = function (point, color, size) {
+        context.beginPath();
+        size = size ? size : 4;
+        context.arc(point.x, point.y, size, 0, 2 * Math.PI);
+        context.fillStyle = color ? color : "blue";
+        context.fill();
+    };
+
 })();
