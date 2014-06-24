@@ -162,6 +162,8 @@
         draw();
     };
 
-    main();
+    window.onload = function () {
+        main();
+    };
 
 })();
