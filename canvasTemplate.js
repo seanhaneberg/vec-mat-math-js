@@ -79,16 +79,15 @@
         // Check all boundaries
         for (var i = 0; i < playAreaLines.length; i++) {
             var pointToLine = VecMath.pointToLineVector(playAreaLines[i].start, playAreaLines[i].end, ball.position);
-            var distance = VecMath.magnitude(pointToLine);
             
-            var facingLine = VecMath.dot(pointToLine, ball.velocity);
+            var facingLine = pointToLine.dot(ball.velocity);
             
-            if (distance <= ball.radius && facingLine > 0) {
-                var pointToLineUnit = VecMath.scalarDivideVector2(distance, pointToLine);
+            if (pointToLine.magnitude <= ball.radius && facingLine > 0) {
+                var pointToLineUnit = pointToLine.div(pointToLine.magnitude); 
 
                 // Reflect about the unit normal from the colliding line.
-                var reflection = VecMath.reflect(ball.velocity, pointToLineUnit);
-                ball.velocity = VecMath.scalarMultVector2(-1 * bounceReduce, reflection);
+                var reflection = ball.velocity.reflect(pointToLineUnit); 
+                ball.velocity = reflection.mult(-1 * bounceReduce);
             }
         }
         
@@ -103,8 +102,8 @@
             ball.velocity.y = -ball.velocity.y * bounceReduce;
         }
 
-        var movementVector = VecMath.scalarMultVector2(delta, ball.velocity);
-        ball.position = VecMath.addVector2(ball.position, movementVector);
+        var movementVector = ball.velocity.mult(delta); 
+        ball.position = ball.position.add(movementVector); 
     };
     
     var update = function () {
@@ -130,7 +129,7 @@
     
     var drawDebugInfo = function () {
         var velocityExaggeration = 400;
-        VecDraw.drawRay(ball.position, VecMath.scalarMultVector2(velocityExaggeration, ball.velocity), "blue", 3);
+        VecDraw.drawRay(ball.position, ball.velocity.mult(velocityExaggeration), "blue", 3);
         drawBallToPlayArea();
     };
     

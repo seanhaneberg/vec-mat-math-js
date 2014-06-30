@@ -2,44 +2,73 @@ var VecMath = VecMath ? VecMath : {};
 
 (function () {
 
-    // Vector Math
-    VecMath.vector2 = function (x, y) {
-        return {x: x, y: y};
+    // Privates. Requires "this" binding in order to be successfully invoked.
+    var addVector2 = function (vector) {
+        return createNewVector2(this.x + vector.x, this.y + vector.y);
     };
 
-    VecMath.addVector2 = function (a, b) {
-        return {x: a.x + b.x, y: a.y + b.y};
+    var subVector2 = function (vector) {
+        return createNewVector2(this.x - vector.x, this.y - vector.y);
     };
 
-    VecMath.subVector2 = function (a, b) {
-        return {x: a.x - b.x, y: a.y - b.y};
+    var multScalarVector2 = function (scalar) {
+        return createNewVector2(this.x * scalar, this.y * scalar);
     };
 
-    VecMath.scalarMultVector2 = function (scalar, vector) {
-        return {x: vector.x * scalar, y: vector.y * scalar};
-    };
-
-    VecMath.scalarDivideVector2 = function (scalar, vector) {
-        if (scalar == 0) {
-            // Legit?
+    var divScalarVector2 = function (scalar) {
+        if (scalar === 0) {
             return "NaN";
         } else {
-            return {x: vector.x / scalar, y: vector.y / scalar};
+            return createNewVector2(this.x / scalar, this.y / scalar);
         }
     };
 
-    VecMath.dot = function (a, b) {
-        return a.x * b.x + a.y * b.y;
+    var dotVector2 = function (vector) {
+        return this.x * vector.x + this.y * vector.y;
     };
-    
-    VecMath.magnitude = function (vector) {
-        var accumulator = 0;
-        
-        for (var curDim in vector) {
-            accumulator += vector[curDim] * vector[curDim];
-        }
+
+    var magnitudeVector2 = function (x, y) {
+        var accumulator = x * x + y * y;
         
         return Math.sqrt(accumulator);
+    };
+
+    var reflect = function (mirror) {
+        // R = 2 * (V dot N) * N - V
+        return mirror.mult(2 * this.dot(mirror)).sub(this);
+    };
+
+    // Constructor for vectors. Defines vector operations.
+    var createNewVector2 = function (x, y) {
+        var newObj = {
+            // Properties
+            x: x,
+            y: y,
+            magnitude: magnitudeVector2(x, y),
+
+            // Functions
+            add: addVector2,
+            sub: subVector2,
+            mult: multScalarVector2,
+            div: divScalarVector2,
+            dot: dotVector2,
+            reflect: reflect
+        };
+
+        // Ensure proper "this" context when invoking.
+        newObj.add.bind(newObj);
+        newObj.sub.bind(newObj);
+        newObj.mult.bind(newObj);
+        newObj.div.bind(newObj);
+        newObj.dot.bind(newObj);
+        newObj.reflect.bind(newObj);
+
+        return newObj;
+    };
+
+    // Vector Math
+    VecMath.vector2 = function (x, y) {
+        return createNewVector2(x, y);
     };
     
     VecMath.pointToLineVector = function (lineStart, lineEnd, point) {
@@ -50,37 +79,31 @@ var VecMath = VecMath ? VecMath : {};
         //      a is lineStart
         //      p is point
         //      n is the unit vector direction of the line segment
-        var lineSegmentVector = VecMath.subVector2(lineEnd, lineStart);
-        var lineDirection = VecMath.scalarDivideVector2(VecMath.magnitude(lineSegmentVector), lineSegmentVector);
+        var lineSegmentVector = lineEnd.sub(lineStart); 
+        var lineDirection = lineSegmentVector.div(lineSegmentVector.magnitude);
 
         // (p - a)
-        var lineStartToPoint = VecMath.subVector2(point, lineStart);
+        var lineStartToPoint = point.sub(lineStart);
 
         VecDraw.drawRay(lineStart, lineStartToPoint);
 
-        var projectOnNormMagnitude = VecMath.dot(lineStartToPoint, lineDirection);
+        var projectOnNormMagnitude = lineStartToPoint.dot(lineDirection);
 
         // When the magnitude is less than 0, we're actually outside
         // the bounds of the line segment. Snap to the origin of the line.
         if (projectOnNormMagnitude <= 0) {
-            return VecMath.subVector2(lineStart, point);
+            return lineStart.sub(point);
         }
 
         // We've gone further than the line segment's end. Clamp to the value closest to 0.
-        projectOnNormMagnitude = Math.min(VecMath.magnitude(lineSegmentVector), projectOnNormMagnitude);
+        projectOnNormMagnitude = Math.min(lineSegmentVector.magnitude, projectOnNormMagnitude);
 
-        var projectOnNormVector = VecMath.scalarMultVector2(projectOnNormMagnitude, lineDirection);
+        var projectOnNormVector = lineDirection.mult(projectOnNormMagnitude);
         VecDraw.drawRay(lineStart, projectOnNormVector, "red");
 
-        var pointToNorm = VecMath.subVector2(projectOnNormVector, lineStartToPoint);
+        var pointToNorm = projectOnNormVector.sub(lineStartToPoint);
 
         return pointToNorm;
     };
-    
-    VecMath.reflect = function (vector, mirror) {
-        // R = 2 * (V dot N) * N - V
-        var proj = VecMath.scalarMultVector2(2 * VecMath.dot(vector, mirror), mirror);
-        return VecMath.subVector2(proj, vector);
-    };
-    
+
 })();
